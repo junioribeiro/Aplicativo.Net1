@@ -31,8 +31,25 @@ namespace Aplicativo.Net.Domain.Commands
 
         public override ResultPedidos Execute()
         {
-            var Pedidos = _repository.List(_filter).ToList();
-            var result = _toEntity.Map<List<PedidoModel>>(Pedidos);
+            List<Pedido> pedidos = new List<Pedido>();
+            if (_filter.IsDetails)
+                pedidos.Add(_repository.Select(_filter.PedidoId));
+            else
+                pedidos = _repository.List(_filter).ToList();
+
+            List<PedidoModel> result = new List<PedidoModel>();
+            pedidos.ForEach(p =>
+            {
+                result.Add(new PedidoModel
+                {
+                    PedidoId = p.PedidoId,
+                    Codigo = p.Codigo,
+                    Solicitante = p.Solicitante,
+                    Data = p.Data,
+                    Total = p.Total,
+                    Produtos = _toEntity.Map<List<ProdutoModel>>(p.Itens)
+                });
+            });
 
             if (result.Count > 0)
                 return new ResultPedidos { Pedidos = result };

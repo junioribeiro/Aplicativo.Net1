@@ -88,9 +88,56 @@ namespace Infra.Data.MSSql.Repositories
 
         protected IEnumerable<Pedido> Listed(PedidoFilter filter)
         {
-                var sql = $"SELECT p.PedidoId,p.Codigo,p.Solicitante,p.Total,p.DataCadastro FROM dbo.Pedidos p   WHERE {getFilter(filter)} order by PedidoId";               
+                var sql = $"SELECT p.PedidoId,p.Codigo,p.Solicitante,p.Total,p.DataCadastro FROM dbo.Pedidos p WHERE {getFilter(filter)} order by PedidoId";               
 
                return Query<Pedido>(sql,"");         
+        }
+
+        protected Pedido Details(int id)
+        {
+            Pedido entity = new Pedido();
+            using (var connection = CreateConnection())
+            {                
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var sql = @"Select p.PedidoId ,p.Codigo ,p.Solicitante ,p.Total ,p.DataCadastro, pr.* 
+                                    from Pedidos p 
+                                    inner join Pedido_Itens i on i.PedidoId = p.PedidoId
+                                    inner join Produtos pr on pr.ProdutoId = i.ProdutoId
+                                    where p.PedidoId = @id";
+                        var pedidoDictionary = new Dictionary<int, Pedido>();
+                        entity = connection.Query<Pedido, PedidoItens, Pedido>(sql, (Pedido, PedidoItens) => {
+                            Pedido pedidoEntry;
+                            if (!pedidoDictionary.TryGetValue(Pedido.PedidoId, out pedidoEntry))
+                            {
+                                pedidoEntry = Pedido;
+                                pedidoEntry.Itens = new List<PedidoItens>();
+                                pedidoDictionary.Add(pedidoEntry.PedidoId, pedidoEntry);
+                            }
+                            pedidoEntry.Itens.Add(PedidoItens);
+                            return pedidoEntry;
+                        }, splitOn: "ProdutoId", param: new { id }, transaction: transaction).Distinct().FirstOrDefault();
+
+                        transaction.Commit();                       
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        string message = entity.PedidoId == 0 ? "Inserir" : "Atualizar";
+                        entity.AddNotification($"{message} Itens", $"Error ao {message} o Pedido: {ex.Message}");
+                        entity.PedidoId = 0;                       
+                    }
+                    finally
+                    {
+                        connection.Close();
+                    }
+                }
+            }
+
+            return entity;
         }
     }
 }

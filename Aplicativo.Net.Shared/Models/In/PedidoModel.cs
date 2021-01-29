@@ -12,7 +12,7 @@ namespace Aplicativo.Net.Shared.Models.In
         public string Codigo { get; set; }
         public string Solicitante { get; set; }
         public DateTime Data { get; set; }
-        public List<ProdutoModel> Produtos { get; set; }
+        public List<ProdutoModel> Produtos { get; set; } = new List<ProdutoModel>();
         public List<int> ProdutoIds { get; set; }
         public decimal Total { get; set; }
 

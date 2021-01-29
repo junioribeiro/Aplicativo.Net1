@@ -29,8 +29,7 @@ namespace Aplicativo.Net.Web.Controllers
            cfg =>
            {
                cfg.CreateMap<PedidoViewModel, PedidoModel>().ReverseMap();
-               cfg.CreateMap<ProdutoViewModel, ProdutoModel>().ReverseMap();
-
+               cfg.CreateMap<PedidoDetailsViewModel, ProdutoModel>().ReverseMap();
            }
            ));
         public PedidoController(IRepository<Produto, int, ProdutoFilter> RepositoryProduto, IRepository<Pedido, int, PedidoFilter> Repository)
@@ -52,8 +51,17 @@ namespace Aplicativo.Net.Web.Controllers
         // GET: PedidoController/Details/5
         public ActionResult Details(int id)
         {
-
-            return View();
+            var p = _handler.Handle(new GetPedidoCommand(_repository, new PedidoFilter { IsDetails = true, PedidoId = id })).Data.Pedidos.FirstOrDefault();
+            PedidoDetailsViewModel view = new PedidoDetailsViewModel
+            {
+                PedidoId = p.PedidoId,
+                Codigo = p.Codigo,
+                Solicitante = p.Solicitante,
+                Total = p.Total,
+                ProdutoModel = p.Produtos
+            };                     
+               
+            return View(view);
         }
 
         [HttpGet("Create")]
