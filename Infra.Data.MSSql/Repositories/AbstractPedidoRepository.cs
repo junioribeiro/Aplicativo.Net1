@@ -15,6 +15,8 @@ namespace Infra.Data.MSSql.Repositories
         protected static string getFilter(PedidoFilter filter)
         {
             List<string> where = new List<string>();
+            if (filter.PedidoId != 0)
+                where.Add("PedidoId = @PedidoId");
             if (!string.IsNullOrEmpty(filter.codigo))
                 where.Add("Codigo = @Codigo");
             if (where.Count == 0)
@@ -90,7 +92,7 @@ namespace Infra.Data.MSSql.Repositories
         {
                 var sql = $"SELECT p.PedidoId,p.Codigo,p.Solicitante,p.Total,p.DataCadastro FROM dbo.Pedidos p WHERE {getFilter(filter)} order by PedidoId";               
 
-               return Query<Pedido>(sql,"");         
+               return Query<Pedido>(sql, new { PedidoId = filter.PedidoId });         
         }
 
         protected Pedido Details(int id)

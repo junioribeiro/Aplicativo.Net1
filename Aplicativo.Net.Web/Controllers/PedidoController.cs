@@ -49,7 +49,7 @@ namespace Aplicativo.Net.Web.Controllers
 
         [HttpGet("Details")]
         // GET: PedidoController/Details/5
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
             var p = _handler.Handle(new GetPedidoCommand(_repository, new PedidoFilter { IsDetails = true, PedidoId = id })).Data.Pedidos.FirstOrDefault();
             PedidoDetailsViewModel view = new PedidoDetailsViewModel
@@ -66,7 +66,7 @@ namespace Aplicativo.Net.Web.Controllers
 
         [HttpGet("Create")]
         // GET: PedidoController/Create
-        public ActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var produtos = _handlerProduto.Handle(new GetProdutoCommand(_repositoryProduto, new ProdutoFilter { }));
             PedidoViewModel view = new PedidoViewModel
@@ -80,7 +80,7 @@ namespace Aplicativo.Net.Web.Controllers
         // POST: PedidoController/Create
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(PedidoViewModel entity)
+        public async Task<ActionResult> Create(PedidoViewModel entity)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace Aplicativo.Net.Web.Controllers
 
         [HttpGet("Edit")]
         // GET: PedidoController/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
             return View();
         }
@@ -110,7 +110,7 @@ namespace Aplicativo.Net.Web.Controllers
         // POST: PedidoController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(int id, IFormCollection collection)
         {
             try
             {
@@ -122,21 +122,35 @@ namespace Aplicativo.Net.Web.Controllers
             }
         }
 
-        [HttpGet("Delete")]
+        [HttpGet("Delete/{id:int?}")]
         // GET: PedidoController/Delete/5
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            return View();
+            var pedido = _handler.Handle(new GetPedidoCommand(_repository, new PedidoFilter { PedidoId = id })).Data.Pedidos.FirstOrDefault();
+            var view = _toEntity.Map<PedidoViewModel>(pedido);
+            return View(view);
         }
 
         // POST: PedidoController/Delete/5
-        [HttpPost]
+        [HttpPost("Delete/{id:int?}")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id, IFormCollection collection)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                if (id != 0)
+                {
+                    var produtomodel = _handler.Handle(new GetPedidoCommand(_repository, new PedidoFilter { PedidoId = id }));
+
+                    if (produtomodel.Success)
+                    {
+                        _handler.Handle(new DeletePedidoCommand(_repository, produtomodel.Data.Pedidos.FirstOrDefault()));
+                    }
+
+                    return RedirectToAction(nameof(Index));
+
+                }
+                return View();
             }
             catch
             {
