@@ -6,9 +6,9 @@
 
 <h4>Detalhes do Produto</h4>
 
-<div>   
+<div>
     <hr />
-    <dl class="row">       
+    <dl class="row">
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Codigo)
         </dt>
@@ -30,6 +30,6 @@
     </dl>
 </div>
 <div>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.ProdutoId, @class = "btn btn-primary" }) |
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ProdutoId }, new { @class = "btn btn-warning" }) |
     <a asp-action="Index" class="btn btn-primary" role="button">Voltar para Listagem</a>
 </div>

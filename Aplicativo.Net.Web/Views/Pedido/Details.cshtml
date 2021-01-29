@@ -35,7 +35,7 @@
     </dl>
     <table class="table">
         <thead>
-            <tr>                
+            <tr>
                 <th scope="col">Nome</th>
                 <th scope="col">Código</th>
                 <th scope="col">Valor</th>
@@ -44,7 +44,7 @@
         <tbody>
             @foreach (var item in Model.ProdutoModel)
             {
-                <tr>                    
+                <tr>
                     <td>@item.Nome</td>
                     <td>@item.Codigo</td>
                     <td>@item.Valor</td>
@@ -56,6 +56,6 @@
 
 </div>
 <div>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.PedidoId, @class = "btn btn-primary" }) |
+    @Html.ActionLink("Edit", "Edit", new { id = Model.PedidoId }, new { @class = "btn btn-warning" }) |
     <a asp-action="Index" class="btn btn-primary" role="button">Voltar para Listagem</a>
 </div>

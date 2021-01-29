@@ -63,6 +63,7 @@ namespace Infra.Data.MSSql.Repositories
                         }
                         else
                         {
+                            entity.Itens.ForEach(item => { item.PedidoId = entity.PedidoId; });
                             // atualiza
                             Execute(@"UPDATE dbo.Pedidos SET Codigo = @Codigo, Solicitante = @Solicitante, Total = @Total WHERE  PedidoId = @PedidoId", entity);
 

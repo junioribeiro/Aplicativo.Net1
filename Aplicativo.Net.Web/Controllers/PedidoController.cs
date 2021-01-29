@@ -100,21 +100,46 @@ namespace Aplicativo.Net.Web.Controllers
             }
         }
 
-        [HttpGet("Edit")]
+        [HttpGet("Edit/{id:int}")]
         // GET: PedidoController/Edit/5
         public async Task<ActionResult> Edit(int id)
         {
-            return View();
+           // PedidoViewModel view = new PedidoViewModel();
+
+            var produtos = _handlerProduto.Handle(new GetProdutoCommand(_repositoryProduto, new ProdutoFilter { }));           
+            
+            var pedido = _handler.Handle(new GetPedidoCommand(_repository, new PedidoFilter { IsDetails = true, PedidoId = id })).Data.Pedidos.FirstOrDefault();
+
+            PedidoViewModel view = new PedidoViewModel
+            {
+                Codigo = pedido.Codigo,
+                PedidoId = pedido.PedidoId,
+                Solicitante = pedido.Solicitante,
+                Total = pedido.Total,
+                Produtos = produtos.Data.Produtos.Select(c => new SelectListItem()
+                { Text = c.Nome, Value = c.ProdutoId.ToString() }).ToList()
+            };
+
+
+            return View(view);
         }
 
         // POST: PedidoController/Edit/5
-        [HttpPost]
+        [HttpPost("Edit/{id:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(int id, [FromForm] PedidoViewModel entity)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                if (id == entity.PedidoId)
+                {
+
+                    var Pedido = _handler.Handle(new SetPedidoCommand(_repository, _toEntity.Map<PedidoModel>(entity)));
+
+                    return RedirectToAction(nameof(Index));
+
+                }
+                return View();
             }
             catch
             {
