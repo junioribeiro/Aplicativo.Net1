@@ -59,8 +59,8 @@ namespace Aplicativo.Net.Web.Controllers
                 Solicitante = p.Solicitante,
                 Total = p.Total,
                 ProdutoModel = p.Produtos
-            };                     
-               
+            };
+
             return View(view);
         }
 
@@ -72,7 +72,11 @@ namespace Aplicativo.Net.Web.Controllers
             PedidoViewModel view = new PedidoViewModel
             {
                 Produtos = produtos.Data.Produtos.Select(c => new SelectListItem()
-                { Text = c.Nome, Value = c.ProdutoId.ToString() }).ToList()
+                {
+                    Text = c.Nome,
+                    Value = c.ProdutoId.ToString()
+                }
+                ).ToList()
             };
             return View(view);
         }
@@ -104,10 +108,8 @@ namespace Aplicativo.Net.Web.Controllers
         // GET: PedidoController/Edit/5
         public async Task<ActionResult> Edit(int id)
         {
-           // PedidoViewModel view = new PedidoViewModel();
+            var produtos = _handlerProduto.Handle(new GetProdutoCommand(_repositoryProduto, new ProdutoFilter { }));
 
-            var produtos = _handlerProduto.Handle(new GetProdutoCommand(_repositoryProduto, new ProdutoFilter { }));           
-            
             var pedido = _handler.Handle(new GetPedidoCommand(_repository, new PedidoFilter { IsDetails = true, PedidoId = id })).Data.Pedidos.FirstOrDefault();
 
             PedidoViewModel view = new PedidoViewModel
@@ -117,9 +119,12 @@ namespace Aplicativo.Net.Web.Controllers
                 Solicitante = pedido.Solicitante,
                 Total = pedido.Total,
                 Produtos = produtos.Data.Produtos.Select(c => new SelectListItem()
-                { Text = c.Nome, Value = c.ProdutoId.ToString() }).ToList()
+                { 
+                    Text = c.Nome, 
+                    Value = c.ProdutoId.ToString(),
+                    Selected = pedido.Produtos.Any(p=> p.ProdutoId == c.ProdutoId)
+                }).ToList()
             };
-
 
             return View(view);
         }

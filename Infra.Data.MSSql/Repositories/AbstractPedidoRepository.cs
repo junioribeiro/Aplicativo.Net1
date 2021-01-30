@@ -43,7 +43,7 @@ namespace Infra.Data.MSSql.Repositories
                             ids += p.ToString();
                             count++;
                             if (count < total)
-                                ids += ",";                            
+                                ids += ",";
                         });
                         var sqlProdutos = $"Select * From Produtos where ProdutoId in({ids})";
                         var produtos = Query<PedidoItens>(sqlProdutos, "").ToList();
@@ -52,26 +52,26 @@ namespace Infra.Data.MSSql.Repositories
                         if (entity.PedidoId == 0)
                         {
                             // inseri o pedido
-                            entity.PedidoId = Query<int>(@"INSERT INTO dbo.Pedidos (Codigo, Solicitante, Total)
+                            entity.PedidoId = connection.Query<int>(@"INSERT INTO dbo.Pedidos (Codigo, Solicitante, Total)
                                             VALUES(@Codigo, @Solicitante, @Total)
-                                      SELECT CAST(@@identity as int)", entity).FirstOrDefault();
+                                      SELECT CAST(@@identity as int)", param: entity, transaction: transaction).FirstOrDefault();
 
                             entity.Itens.ForEach(item => { item.PedidoId = entity.PedidoId; });
                             //inseri os itens
-                            Execute("INSERT INTO [dbo].[Pedido_Itens]([PedidoId] ,[ProdutoId]) VALUES (@PedidoId,@ProdutoId)", entity.Itens);
+                            connection.Execute("INSERT INTO [dbo].[Pedido_Itens]([PedidoId] ,[ProdutoId]) VALUES (@PedidoId,@ProdutoId)", param: entity.Itens, transaction: transaction);
 
                         }
                         else
                         {
                             entity.Itens.ForEach(item => { item.PedidoId = entity.PedidoId; });
                             // atualiza
-                            Execute(@"UPDATE dbo.Pedidos SET Codigo = @Codigo, Solicitante = @Solicitante, Total = @Total WHERE  PedidoId = @PedidoId", entity);
+                            connection.Execute(@"UPDATE dbo.Pedidos SET Codigo = @Codigo, Solicitante = @Solicitante, Total = @Total WHERE  PedidoId = @PedidoId", param: entity, transaction: transaction);
 
                             // apaga todos os itens do pedido antigo 
-                            Execute(@"DELETE FROM Pedido_Itens WHERE PedidoId = @id", new { id = entity.PedidoId });
+                            connection.Execute(@"DELETE FROM Pedido_Itens WHERE PedidoId = @id", param: new { id = entity.PedidoId }, transaction: transaction);
 
                             // inclui os novos itens
-                            Execute("INSERT INTO [dbo].[Pedido_Itens]([PedidoId] ,[ProdutoId]) VALUES (@PedidoId,@ProdutoId)", entity.Itens);
+                            connection.Execute("INSERT INTO [dbo].[Pedido_Itens]([PedidoId] ,[ProdutoId]) VALUES (@PedidoId,@ProdutoId)", param: entity.Itens, transaction: transaction);
                         }
                         transaction.Commit();
                         result = entity;
@@ -91,53 +91,51 @@ namespace Infra.Data.MSSql.Repositories
 
         protected IEnumerable<Pedido> Listed(PedidoFilter filter)
         {
-                var sql = $"SELECT p.PedidoId,p.Codigo,p.Solicitante,p.Total,p.DataCadastro FROM dbo.Pedidos p WHERE {getFilter(filter)} order by PedidoId";               
+            var sql = $"SELECT p.PedidoId,p.Codigo,p.Solicitante,p.Total,p.DataCadastro FROM dbo.Pedidos p WHERE {getFilter(filter)} order by PedidoId";
 
-               return Query<Pedido>(sql, new { PedidoId = filter.PedidoId });         
+            return Query<Pedido>(sql, new { PedidoId = filter.PedidoId });
         }
 
         protected Pedido Details(int id)
         {
             Pedido entity = new Pedido();
             using (var connection = CreateConnection())
-            {                
+            {
                 connection.Open();
-                using (var transaction = connection.BeginTransaction())
+                try
                 {
-                    try
-                    {
-                        var sql = @"Select p.PedidoId ,p.Codigo ,p.Solicitante ,p.Total ,p.DataCadastro, pr.* 
+                    var sql = @"Select p.PedidoId ,p.Codigo ,p.Solicitante ,p.Total ,p.DataCadastro, pr.* 
                                     from Pedidos p 
                                     inner join Pedido_Itens i on i.PedidoId = p.PedidoId
                                     inner join Produtos pr on pr.ProdutoId = i.ProdutoId
                                     where p.PedidoId = @id";
-                        var pedidoDictionary = new Dictionary<int, Pedido>();
-                        entity = connection.Query<Pedido, PedidoItens, Pedido>(sql, (Pedido, PedidoItens) => {
-                            Pedido pedidoEntry;
-                            if (!pedidoDictionary.TryGetValue(Pedido.PedidoId, out pedidoEntry))
-                            {
-                                pedidoEntry = Pedido;
-                                pedidoEntry.Itens = new List<PedidoItens>();
-                                pedidoDictionary.Add(pedidoEntry.PedidoId, pedidoEntry);
-                            }
-                            pedidoEntry.Itens.Add(PedidoItens);
-                            return pedidoEntry;
-                        }, splitOn: "ProdutoId", param: new { id }, transaction: transaction).Distinct().FirstOrDefault();
+                    var pedidoDictionary = new Dictionary<int, Pedido>();
+                    entity = connection.Query<Pedido, PedidoItens, Pedido>(sql, (Pedido, PedidoItens) =>
+                    {
+                        Pedido pedidoEntry;
+                        if (!pedidoDictionary.TryGetValue(Pedido.PedidoId, out pedidoEntry))
+                        {
+                            pedidoEntry = Pedido;
+                            pedidoEntry.Itens = new List<PedidoItens>();
+                            pedidoDictionary.Add(pedidoEntry.PedidoId, pedidoEntry);
+                        }
+                        pedidoEntry.Itens.Add(PedidoItens);
+                        return pedidoEntry;
+                    }, splitOn: "ProdutoId", param: new { id }).Distinct().FirstOrDefault();
 
-                        transaction.Commit();                       
-                    }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        string message = entity.PedidoId == 0 ? "Inserir" : "Atualizar";
-                        entity.AddNotification($"{message} Itens", $"Error ao {message} o Pedido: {ex.Message}");
-                        entity.PedidoId = 0;                       
-                    }
-                    finally
-                    {
-                        connection.Close();
-                    }
+
                 }
+                catch (Exception ex)
+                {
+
+                    entity.AddNotification($"Itens", $"Error ao Buscar o Pedido: {ex.Message}");
+                    entity.PedidoId = 0;
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
             }
 
             return entity;
