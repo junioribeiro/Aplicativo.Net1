@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30406.217
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0 - Apresentation", "0 - Apresentation", "{4D395048-1936-491F-89D2-1C4BEE2E8340}"
+	ProjectSection(SolutionItems) = preProject
+		..\Aplicativo.Net\.gitattributes = ..\Aplicativo.Net\.gitattributes
+		..\Aplicativo.Net\.gitignore = ..\Aplicativo.Net\.gitignore
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1 - Domain", "1 - Domain", "{A9264993-AE65-41E7-9468-4E3851C87BA3}"
 EndProject
@@ -19,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.1 - Data", "3.1 - Data", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infra.Data.MSSql", "Infra.Data.MSSql\Infra.Data.MSSql.csproj", "{BE0B917A-ADE6-44D0-B932-C38AC2EB2AA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aplicativo.Net.Web", "Aplicativo.Net.Web\Aplicativo.Net.Web.csproj", "{FBE7B4BE-FA80-4714-87E4-7EEFDE8D39A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aplicativo.Net.Web", "Aplicativo.Net.Web\Aplicativo.Net.Web.csproj", "{FBE7B4BE-FA80-4714-87E4-7EEFDE8D39A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

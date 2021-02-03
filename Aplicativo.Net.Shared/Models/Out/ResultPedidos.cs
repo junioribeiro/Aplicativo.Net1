@@ -8,6 +8,6 @@ namespace Aplicativo.Net.Shared.Models.Out
 {
     public class ResultPedidos : Notifiable
     {
-        public List<PedidoModel> Pedidos { get; set; }
+        public List<PedidoModel> Pedidos { get; set; } = new List<PedidoModel>();
     }
 }

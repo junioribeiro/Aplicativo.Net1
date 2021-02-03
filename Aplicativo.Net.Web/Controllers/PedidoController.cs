@@ -42,8 +42,13 @@ namespace Aplicativo.Net.Web.Controllers
         // GET: PedidoController
         public async Task<IActionResult> Index()
         {
-            var pedidos = _handler.Handle(new GetPedidoCommand(_repository, new PedidoFilter { })).Data.Pedidos;
-            var view = _toEntity.Map<List<PedidoViewModel>>(pedidos);
+            var pedidos = _handler.Handle(new GetPedidoCommand(_repository, new PedidoFilter { }));
+            List<PedidoViewModel> view = new List<PedidoViewModel>();
+            if (pedidos.Success)
+            {
+                view = _toEntity.Map<List<PedidoViewModel>>(pedidos.Data.Pedidos);
+            }
+
             return View(view);
         }
 
@@ -69,15 +74,23 @@ namespace Aplicativo.Net.Web.Controllers
         public async Task<IActionResult> Create()
         {
             var produtos = _handlerProduto.Handle(new GetProdutoCommand(_repositoryProduto, new ProdutoFilter { }));
-            PedidoViewModel view = new PedidoViewModel
+            PedidoViewModel view = new PedidoViewModel();
+            if (produtos.Success)
             {
-                Produtos = produtos.Data.Produtos.Select(c => new SelectListItem()
+                view = new PedidoViewModel
                 {
-                    Text = c.Nome,
-                    Value = c.ProdutoId.ToString()
-                }
-                ).ToList()
-            };
+                    Produtos = produtos.Data.Produtos.Select(c => new SelectListItem()
+                    {
+                        Text = c.Nome,
+                        Value = c.ProdutoId.ToString()
+                    }).ToList()
+                };
+            }
+            else
+            {
+                ViewBag.Message = "Não existem Produtos cadastrados, favor cadastrar os produto no menu produtos";
+            }
+
             return View(view);
         }
 
@@ -119,11 +132,11 @@ namespace Aplicativo.Net.Web.Controllers
                 Solicitante = pedido.Solicitante,
                 Total = pedido.Total,
                 Produtos = produtos.Data.Produtos.Select(c => new SelectListItem()
-                { 
-                    Text = c.Nome, 
+                {
+                    Text = c.Nome,
                     Value = c.ProdutoId.ToString(),
-                    Selected = pedido.Produtos.Any(p=> p.ProdutoId == c.ProdutoId)
-                }).ToList()
+                }).ToList(),
+                ProdutoIds = pedido.Produtos.Select(p => p.ProdutoId).ToList()
             };
 
             return View(view);

@@ -9,45 +9,56 @@
 <p>
     <a asp-action="Create" class="btn btn-success">Novo Pedido</a>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.PedidoId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Codigo)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Solicitante)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.PedidoId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Codigo)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Solicitante)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Total)
-            </td>
-            <td>
-                @*@Html.ActionLink("Atualizar", "Edit", new { id=item.PedidoId }) |*@
-                @Html.ActionLink("Detalhes", "Details", new {  id=item.PedidoId }) |
-                @Html.ActionLink("Excluir", "Delete", new {  id=item.PedidoId })
-            </td>
-        </tr>
+<hr />
+@if (Model.Count() > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.PedidoId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Codigo)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Solicitante)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Total)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PedidoId)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Codigo)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Solicitante)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Total)
+                    </td>
+                    <td>
+                        @Html.ActionLink("Atualizar", "Edit", new { id = item.PedidoId }) |
+                        @Html.ActionLink("Detalhes", "Details", new { id = item.PedidoId }) |
+                        @Html.ActionLink("Excluir", "Delete", new { id = item.PedidoId })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
-    </tbody>
-</table>
+else
+{
+    <h3 style="color:orangered">Não há Pedidos Cadastrados</h3>
+}
+
+

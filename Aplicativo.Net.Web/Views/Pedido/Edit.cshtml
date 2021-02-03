@@ -24,9 +24,8 @@
                 <span asp-validation-for="Solicitante" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label for="Produtos" class="control-label">Produtos</label>
-                <select asp-for="ProdutoIds" asp-items="Model.Produtos" class="form-control form-control-chosen" data-placeholder="Selecione..."></select>
-                <span asp-validation-for="ProdutoIds" class="text-danger"></span>
+                <label for="Produtos" class="control-label">Produtos</label>        
+                @Html.ListBoxFor(model => model.ProdutoIds, new MultiSelectList(Model.Produtos, "Value", "Text"), new { id = "multiSelectDropDown", multiple = "multiple" })
             </div>
             <div class="form-group">
                 <input type="submit" value="Atualizar" class="btn btn-warning" />
@@ -43,12 +42,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
     <script>
-
-        $("#ProdutoIds")
-            .find("option")
-            //.prop("selected", true)
-            .end()
-            .chosen();        
+        $(function () {
+           
+            $("#multiSelectDropDown").chosen({ width: "100%" });
+            //$("#multiSelectDropDown").addClass("form-control").addClass("form-control-chosen")
+            
+        });              
     </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

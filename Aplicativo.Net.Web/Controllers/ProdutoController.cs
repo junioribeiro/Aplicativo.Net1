@@ -38,7 +38,12 @@ namespace Aplicativo.Net.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var produtos = _handler.Handle(new GetProdutoCommand(_repository, new ProdutoFilter { }));
-            var view = _toEntity.Map<List<ProdutoViewModel>>(produtos.Data.Produtos);
+            List<ProdutoViewModel> view = new List<ProdutoViewModel>();
+            if (produtos.Success)
+            {
+                view = _toEntity.Map<List<ProdutoViewModel>>(produtos.Data.Produtos);
+            }
+
             return View(view);
         }
 
@@ -142,18 +147,18 @@ namespace Aplicativo.Net.Web.Controllers
                 if (id != 0)
                 {
                     var produtomodel = _handler.Handle(new GetProdutoCommand(_repository, new ProdutoFilter { ProdutoId = id }));
-                    
-                    if(produtomodel.Success)
+
+                    if (produtomodel.Success)
                     {
                         _handler.Handle(new DeleteProdutoCommand(_repository, produtomodel.Data.Produtos.FirstOrDefault()));
-                    }                    
+                    }
 
                     return RedirectToAction(nameof(Index));
 
                 }
                 return View();
             }
-            catch
+            catch (Exception ex)
             {
                 return View();
             }

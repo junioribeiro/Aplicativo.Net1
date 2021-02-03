@@ -22,7 +22,8 @@ namespace Aplicativo.Net.Web.Models
         public IEnumerable<int> ProdutoIds { get; set; } = new List<int>();      
 
         [Required(ErrorMessage = "Obrigatório a seleção de no minimo um Produto")]
-        public List<SelectListItem> Produtos { get; set; } = new List<SelectListItem>();       
+        public List<SelectListItem> Produtos { get; set; } = new List<SelectListItem>();   
+        
         public decimal Total { get; set; }
     }
 }
